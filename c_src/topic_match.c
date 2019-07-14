@@ -1,5 +1,4 @@
 #include <erl_nif.h>
-#include <string.h>
 
 void goto_next_slash(const unsigned char**);
 
@@ -14,7 +13,6 @@ void goto_next_slash(const unsigned char** t) {
 int match_topic(const unsigned char* topic, const unsigned char* filter) {
     const unsigned char *t = topic;
     const unsigned char *f = filter;
-    //printf("====== t: %s, f: %s\n", topic, filter);
     // goto the first postion that differs
     while(*t == *f) {
         if (*t == '\0')
@@ -23,7 +21,6 @@ int match_topic(const unsigned char* topic, const unsigned char* filter) {
     }
     unsigned char tc = *t;
     unsigned char fc = *f;
-    //printf("====== tc: %c, fc: %c\n", tc, fc);
     if (tc == '\0' && fc == '\0') { // finished topic and filter
         return 1;
     } else {
