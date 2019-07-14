@@ -10,6 +10,8 @@ Build
     
     $ topic_match:match(<<"a/b">>, <<"a/#">>).
 
+    $ topic_match:match(<<"很/简/单"/utf8>>,<<"很/简/+"/utf8>>).
+
     $ topic_match:bench().
 
 ![Alt text](images/match.png?raw=true "Title")

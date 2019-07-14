@@ -25,7 +25,9 @@ int match_topic(const unsigned char* topic, const unsigned char* filter) {
         return 1;
     } else {
         if (tc == '\0') { // finished scaning the topic
-            if (fc == '#' || (fc == '+' && *(f+1) == '\0')) {
+            if (fc == '#'
+                || (fc =='/' && *(f+1) == '#')
+                || (fc == '+' && *(f+1) == '\0')) {
                 return 1;
             } else {
                 return 0;
