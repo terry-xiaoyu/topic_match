@@ -4,6 +4,9 @@
 
 -on_load(load_nif/0).
 
+-type topic() :: binary().
+-type topic_filter() :: binary().
+
 -define(APPNAME, topic_match).
 -define(LIBNAME, topic_match).
 
@@ -21,5 +24,6 @@ load_nif() ->
            end,
   erlang:load_nif(SoName, 0).
 
+-spec match(topic(), topic_filter()) -> boolean().
 match(_, _) ->
   "NIF match not loaded".

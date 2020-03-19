@@ -59,10 +59,13 @@ static ERL_NIF_TERM match(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
     ErlNifBinary t, f;
     if (!enif_inspect_binary(env, argv[0], &t)
-        || !enif_inspect_binary(env, argv[1], &f)
-        || t.size < 1
-        || f.size < 1) {
+        || !enif_inspect_binary(env, argv[1], &f)) {
         return enif_make_badarg(env);
+    }
+    if (t.size == 0 && f.size == 0) {
+        return enif_make_atom(env, "true");
+    } else if (t.size < 1 || f.size < 1) {
+        return enif_make_atom(env, "false");
     }
     t.data[t.size] = '\0';
     f.data[f.size] = '\0';
