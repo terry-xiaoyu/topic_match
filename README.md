@@ -3,8 +3,8 @@ NIF MQTT Topic Match
 
 A NIF function testing if a *MQTT Topic* matches a *Topic filter*.
 
-Build and use
--------------
+Build and usage
+---------------
 
     $ rebar3 shell
 
@@ -13,6 +13,11 @@ Build and use
 
     2> topic_match:match(<<"很/简/单"/utf8>>,<<"很/简/+"/utf8>>).
     true
+
+Unit test
+---------
+
+$ make eunit
 
 
 Benchmark
