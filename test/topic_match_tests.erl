@@ -88,3 +88,16 @@ utf8_match_0_test() ->
     ?assertEqual(false, topic_match:match(<<"很/简/"/utf8>>,<<"很/+"/utf8>>)),
     ?assertEqual(false, topic_match:match(<<"很/简"/utf8>>,<<"很/+/单"/utf8>>)),
     ?assertEqual(false, topic_match:match(<<"简"/utf8>>,<<"很/#"/utf8>>)).
+
+safty_test() ->
+    Topics = [<<"t/1">>, <<"t/1">>, <<"a">>, <<"t/2">>, <<"t//">>, <<"t/2/1">>, <<"t">>, <<"e/e">>, <<"e">>],
+    Data = {1,2,3,4,5,6,7,8,9,10},
+    Filter = <<"t/#">>,
+    %% verify the filter result
+    ?assertEqual([<<"t/1">>, <<"t/1">>, <<"t/2">>, <<"t//">>, <<"t/2/1">>, <<"t">>],
+        lists:filter(fun(Topic) ->
+            topic_match:match(Topic, Filter)
+        end, Topics)),
+    %% verify the erlang terms was not affected
+    ?assertEqual({1,2,3,4,5,6,7,8,9,10}, Data),
+    ?assertEqual(<<"t/#">>, Filter).
