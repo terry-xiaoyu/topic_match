@@ -1,7 +1,7 @@
 NIF MQTT Topic Match
 ====================
 
-A NIF function testing if a *MQTT Topic* matches a *Topic filter*.
+A NIF function for testing if a *MQTT Topic* matches a *Topic filter*.
 
 Build and usage
 ---------------
@@ -23,13 +23,16 @@ $ make eunit
 Benchmark
 ---------
 
+The `topic_bench:run().` will run each function 100K times by default:
+
     $ rebar3 shell
 
     1> c("benchmark/topic_bench").
     {ok,topic_bench}
 
     2> c("benchmark/emqx_topic").
-    {ok,emqx_topic} 
+    {ok,emqx_topic}
+
     3> topic_bench:run().
 
        topic_match:match(<<"t/a/e/b">>,<<"t/a/e/+">>) -- 100000 times -- in 33.296 ms
@@ -49,4 +52,4 @@ Benchmark
 
       ok
 
-The `topic_bench:run().` will run each function 100K times by default.
+It shows that it would be 10 times more efficient to do the task using NIF than pure Erlang.
