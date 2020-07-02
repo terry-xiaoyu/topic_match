@@ -1,44 +1,45 @@
 #include <erl_nif.h>
 
-void goto_next_slash(const unsigned char**);
+void goto_next_slash(const unsigned char**, const unsigned char*);
 
-int match_topic(const unsigned char*, const unsigned char*);
+int match_topic(const unsigned char*, const unsigned char*,
+                const unsigned char*, const unsigned char*);
 
-void goto_next_slash(const unsigned char** t) {
-    while(**t && **t != '/') {
+void goto_next_slash(const unsigned char** t, const unsigned char* tend) {
+    while(*t != tend && **t != '/') {
         (*t)++;
     }
 }
 
-int match_topic(const unsigned char* topic, const unsigned char* filter) {
+int match_topic(const unsigned char* topic, const unsigned char* tend,
+                const unsigned char* filter, const unsigned char* fend) {
     const unsigned char *t = topic;
     const unsigned char *f = filter;
     // goto the first postion that differs
     while(*t == *f) {
-        if (*t == '\0')
+        if (t == tend)
             return 1;
         t++; f++;
     }
-    unsigned char tc = *t;
     unsigned char fc = *f;
-    if (tc == '\0' && fc == '\0') { // finished topic and filter
+    if (t == tend && f == fend) { // finished topic and filter
         return 1;
     } else {
-        if (tc == '\0') { // finished scaning the topic
+        if (t == tend) { // finished scaning the topic
             if (fc == '#'
                 || (fc =='/' && *(f+1) == '#')
-                || (fc == '+' && *(f+1) == '\0')) {
+                || (fc == '+' && (f+1) == fend)) {
                 return 1;
             } else {
                 return 0;
             }
-        } else if (fc == '\0') { // finished scaning the filter
+        } else if (f == fend) { // finished scaning the filter
             unsigned char fc_ = *(f - 1); // *f_ is the last char in the filter
             if (fc_ == '#') {
                 return 1;
             } else if (fc_ == '+') {
-                goto_next_slash(&t);
-                return *t == '\0';
+                goto_next_slash(&t, tend);
+                return t == tend;
             } else {
                 return 0;
             }
@@ -46,8 +47,8 @@ int match_topic(const unsigned char* topic, const unsigned char* filter) {
             if (fc == '#') {
                 return 1;
             } else if (fc == '+') {
-                goto_next_slash(&t);
-                return match_topic(t, f+1); // skip the '+'
+                goto_next_slash(&t, tend);
+                return match_topic(t, tend, f+1, fend); // skip the '+'
             } else {
                 return 0;
             }
@@ -67,9 +68,11 @@ static ERL_NIF_TERM match(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
     } else if (t.size < 1 || f.size < 1) {
         return enif_make_atom(env, "false");
     }
-    t.data[t.size] = '\0';
-    f.data[f.size] = '\0';
-    if (match_topic((const unsigned char *)t.data, (const unsigned char *)f.data)) {
+    const unsigned char *tdata = (const unsigned char *)t.data;
+    const unsigned char *fdata = (const unsigned char *)f.data;
+    const unsigned char *tend = tdata + t.size;
+    const unsigned char *fend = fdata + f.size;
+    if (match_topic(tdata, tend, fdata, fend)) {
         return enif_make_atom(env, "true");
     }
     return enif_make_atom(env, "false");
