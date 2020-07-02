@@ -2,38 +2,28 @@
 
 -export([run/0]).
 
+-define(REPEAT, 100000).
+
 run() ->
-  io:format("========== simple binary compare:~n"),
-  test_time(match_str, fun repeat/1, [fun match_str/0]),
-  io:format("========== nif topic match:~n"),
-  test_time('match_nif_+', fun repeat/1, [fun match_p_nif/0]),
-  test_time('match_nif_#', fun repeat/1, [fun match_w_nif/0]),
-  test_time('match_nif_str', fun repeat/1, [fun match_s_nif/0]),
-  io:format("========== emqx topic match~n"),
-  test_time('match_emqx_+', fun repeat/1, [fun match_emqx_p/0]),
-  test_time('match_emqx_#', fun repeat/1, [fun match_emqx_w/0]),
-  test_time('match_emqx_str', fun repeat/1, [fun match_emqx_s/0]).
+  erlang:put(seq, lists:seq(1, ?REPEAT)),
+  BenchList = [
+    {<<"t/a/e/b">>, <<"t/a/e/+">>},
+    {<<"t/a/e/b">>, <<"t/a/e/#">>},
+    {<<"t/a/e/b">>, <<"t/a/e/b">>},
+    {<<"tlink/10060180/10007089/10007089111/v1/up/ad">>, <<"tlink/+/+/+/v1/up/ad">>},
+    {<<"tlink/10060180/10007089/10007089111/v1/up/ad">>, <<"tlink/+/+/+/v1/dn/#">>}
+  ],
+  [begin
+      compare_tc(Topic, Filter),
+      io:format("~n")
+   end || {Topic, Filter} <- BenchList],
+  ok.
 
-test_time(Name, Fun, Args) ->
-  {Time, _V} = timer:tc(Fun, Args),
-  io:format("~p -- ~pms~n", [Name, Time/1000]).
+compare_tc(Topic, Filter) ->
+  {Time1, _V} = timer:tc(fun() -> repeat(fun topic_match:match/2, Topic, Filter) end),
+  io:format("topic_match:match(~p,~p) -- ~p times -- in ~p ms~n", [Topic, Filter, ?REPEAT, Time1/1000]),
+  {Time2, _V} = timer:tc(fun() -> repeat(fun emqx_topic:match/2, Topic, Filter) end),
+  io:format("emqx_topic:match(~p,~p) -- ~p times -- in ~p ms~n", [Topic, Filter, ?REPEAT, Time2/1000]).
 
-repeat(Fun) ->
-  [Fun() || _ <- lists:seq(1,1000000)].
-
-match_str() ->
-  <<"t/a/e/b">> =:= <<"t/a/e/b">>.
-
-match_emqx_p() ->
-  emqx_topic:match(<<"t/a/e/b">>, <<"t/a/e/+">>).
-match_emqx_w() ->
-  emqx_topic:match(<<"t/a/e/b">>, <<"t/a/e/#">>).
-match_emqx_s() ->
-  emqx_topic:match(<<"t/a/e/b">>, <<"t/a/e/b">>).
-
-match_p_nif() ->
-  topic_match:match(<<"t/a/e/b">>, <<"t/a/e/+">>).
-match_w_nif() ->
-  topic_match:match(<<"t/a/e/b">>, <<"t/a/e/#">>).
-match_s_nif() ->
-  topic_match:match(<<"t/a/e/b">>, <<"t/a/e/b">>).
+repeat(Fun, Topic, Filter) ->
+  [Fun(Topic, Filter) || _ <- erlang:get(seq)].

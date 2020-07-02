@@ -23,23 +23,30 @@ $ make eunit
 Benchmark
 ---------
 
+    $ rebar3 shell
+
     1> c("benchmark/topic_bench").
     {ok,topic_bench}
 
     2> c("benchmark/emqx_topic").
-    {ok,emqx_topic}
-
+    {ok,emqx_topic} 
     3> topic_bench:run().
-    ========== simple binary compare:
-    match_str -- 224.036ms
-    ========== nif topic match:
-    'match_nif_+' -- 328.589ms
-    'match_nif_#' -- 249.352ms
-    match_nif_str -- 247.829ms
-    ========== emqx topic match
-    'match_emqx_+' -- 3013.372ms
-    'match_emqx_#' -- 2827.283ms
-    match_emqx_str -- 2870.919ms
-    ok
 
-The `topic_bench:run().` will run each function 1M times.
+       topic_match:match(<<"t/a/e/b">>,<<"t/a/e/+">>) -- 100000 times -- in 33.296 ms
+       emqx_topic:match(<<"t/a/e/b">>,<<"t/a/e/+">>) -- 100000 times -- in 327.848 ms
+
+       topic_match:match(<<"t/a/e/b">>,<<"t/a/e/#">>) -- 100000 times -- in 25.82 ms
+       emqx_topic:match(<<"t/a/e/b">>,<<"t/a/e/#">>) -- 100000 times -- in 302.314 ms
+
+       topic_match:match(<<"t/a/e/b">>,<<"t/a/e/b">>) -- 100000 times -- in 23.132 ms
+       emqx_topic:match(<<"t/a/e/b">>,<<"t/a/e/b">>) -- 100000 times -- in 323.006 ms
+
+       topic_match:match(<<"tlink/10060180/10007089/10007089111/v1/up/ad">>,<<"tlink/+/+/+/v1/up/ad">>) -- 100000 times -- in 25.923 ms
+       emqx_topic:match(<<"tlink/10060180/10007089/10007089111/v1/up/ad">>,<<"tlink/+/+/+/v1/up/ad">>) -- 100000 times -- in 504.146 ms
+
+       topic_match:match(<<"tlink/10060180/10007089/10007089111/v1/up/ad">>,<<"tlink/+/+/+/v1/dn/#">>) -- 100000 times -- in 48.126 ms
+       emqx_topic:match(<<"tlink/10060180/10007089/10007089111/v1/up/ad">>,<<"tlink/+/+/+/v1/dn/#">>) -- 100000 times -- in 611.386 ms
+
+      ok
+
+The `topic_bench:run().` will run each function 100K times by default.
